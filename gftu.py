@@ -21,6 +21,45 @@ version = "v00.01"
 # Get HomeDir
 homedir = str(Path.home())
 
+# Never write same code, make function
+def numFolders(path):
+    return len([f.path for f in os.scandir(path) if f.is_dir()])
+
+
+def hasRuntime(path):
+    return os.path.isdir(path) == True and numFolders(path) > 0
+
+
+def copyTheme(runtime_path, namespace, platforms, theme_path):
+    for p in platforms:
+        dest = runtime_path + "org." + namespace + ".Platform/x86_64/" + p + "/active/files/share/themes/"
+        # TODO Handle sudo needed for copying into /var/lib
+        command = "cp -R " + theme_path + " " + dest
+
+        print("\nCOPYING TO: ", dest)
+        print(command)
+        os.system(command)
+
+# Set runtime path
+runtime_sys = "/var/lib/flatpak/runtime/"
+runtime_local = homedir + "/.local/share/flatpak/runtime/"
+runtime = []
+
+print("\nLooking for Flatpak runtime...")
+
+if hasRuntime(runtime_sys):
+    runtime.append(runtime_sys)
+
+if hasRuntime(runtime_local):
+    runtime.append(runtime_local)
+
+if len(runtime) == 0:
+    print("flatpak runtime not found in:" + runtime_local + " or " + runtime_sys)
+    exit()
+
+for r in runtime:
+    print("flatpak runtime found in:", r)
+
 # Get current theme being used
 print("\nIdentifying which theme is currently being used...")
 theme = os.popen('gsettings get org.gnome.desktop.interface gtk-theme').read()
